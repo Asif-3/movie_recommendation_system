@@ -1,17 +1,46 @@
 import streamlit as st
 import pandas as pd
-from datasets import load_dataset
+import requests
+import os
+from datasets import Dataset
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Page config
 st.set_page_config(page_title="🎬 Movie Recommender", layout="wide")
 
-# Load dataset
+# Define URLs for dataset files on GitHub
+arrow_url = 'https://github.com/Asif-3/movie_recommendation_system/raw/main/datasets/movies-dataset-train.arrow'
+info_url = 'https://github.com/Asif-3/movie_recommendation_system/raw/main/datasets/dataset_info.json'
+
+# Directory to save the dataset files
+dataset_path = 'datasets'
+
+# Ensure the directory exists
+if not os.path.exists(dataset_path):
+    os.makedirs(dataset_path)
+
+# Download Arrow file if not already present
+arrow_file_path = os.path.join(dataset_path, 'movies-dataset-train.arrow')
+if not os.path.exists(arrow_file_path):
+    st.write("Downloading dataset...")
+    response = requests.get(arrow_url)
+    with open(arrow_file_path, 'wb') as f:
+        f.write(response.content)
+    st.write("Dataset downloaded!")
+
+# Download dataset_info file if not already present
+info_file_path = os.path.join(dataset_path, 'dataset_info.json')
+if not os.path.exists(info_file_path):
+    response = requests.get(info_url)
+    with open(info_file_path, 'wb') as f:
+        f.write(response.content)
+
+# Load dataset using Hugging Face's datasets library
 @st.cache_data
 def load_data():
-    dataset = load_dataset("Pablinho/movies-dataset")
-    df = dataset['train'].to_pandas()
+    dataset = Dataset.load_from_disk(dataset_path)
+    df = dataset.to_pandas()
 
     # Rename columns to lowercase for consistency
     df.rename(columns={
@@ -45,7 +74,7 @@ movies = load_data()
 if not movies.empty:
     similarity = compute_similarity(movies)
 
-    st.title("🎬 Movie Recommender System ")
+    st.title("🎬 Movie Recommender System")
     selected_movie = st.selectbox("🎞️ Select a movie", movies['title'].values)
 
     if st.button("✨ Show Recommendations"):
