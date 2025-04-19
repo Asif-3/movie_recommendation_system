@@ -9,58 +9,50 @@ from sklearn.metrics.pairwise import cosine_similarity
 # Page config
 st.set_page_config(page_title="🎬 Movie Recommender", layout="wide")
 
-# Define URLs for dataset files on GitHub
+# GitHub URL for the dataset
 arrow_url = 'https://github.com/Asif-3/movie_recommendation_system/raw/main/movies-dataset-train.arrow'
-info_url = 'https://github.com/Asif-3/movie_recommendation_system/raw/main/dataset_info.json'
 
-# Directory to save the dataset files
+# Local path to store the dataset
 dataset_path = 'datasets'
+arrow_file_path = os.path.join(dataset_path, 'movies-dataset-train.arrow')
 
-# Ensure the directory exists
+# Create dataset directory if it doesn't exist
 if not os.path.exists(dataset_path):
     os.makedirs(dataset_path)
 
-# Download Arrow file if not already present
-arrow_file_path = os.path.join(dataset_path, 'movies-dataset-train.arrow')
+# Download the .arrow file if not already present
 if not os.path.exists(arrow_file_path):
-    st.write("Downloading dataset...")
+    st.info("📥 Downloading dataset...")
     response = requests.get(arrow_url)
     with open(arrow_file_path, 'wb') as f:
         f.write(response.content)
-    st.write("Dataset downloaded!")
+    st.success("✅ Dataset downloaded!")
 
-# Download dataset_info file if not already present
-info_file_path = os.path.join(dataset_path, 'dataset_info.json')
-if not os.path.exists(info_file_path):
-    response = requests.get(info_url)
-    with open(info_file_path, 'wb') as f:
-        f.write(response.content)
-
-# Load dataset using Hugging Face's datasets library
+# Load dataset using Hugging Face's `from_file` method
 @st.cache_data
 def load_data():
-    dataset = Dataset.load_from_disk(dataset_path)
+    dataset = Dataset.from_file(arrow_file_path)
     df = dataset.to_pandas()
 
-    # Rename columns to lowercase for consistency
+    # Standardize column names
     df.rename(columns={
         'Title': 'title',
         'Overview': 'overview',
         'Poster_Url': 'poster_url'
     }, inplace=True)
 
-    # Drop rows with missing title or overview
+    # Clean up missing data
     df = df.dropna(subset=['title', 'overview']).reset_index(drop=True)
     return df
 
-# Compute similarity
+# Compute similarity matrix
 @st.cache_data
 def compute_similarity(df):
     tfidf = TfidfVectorizer(stop_words='english')
     tfidf_matrix = tfidf.fit_transform(df['overview'].fillna(''))
     return cosine_similarity(tfidf_matrix)
 
-# Recommendation logic
+# Recommender function
 def recommend(movie, df, similarity_matrix):
     index = df[df['title'] == movie].index[0]
     distances = list(enumerate(similarity_matrix[index]))
@@ -68,9 +60,10 @@ def recommend(movie, df, similarity_matrix):
     recommendations = [(df.iloc[i].title, df.iloc[i].overview, df.iloc[i].poster_url) for i, _ in sorted_distances]
     return recommendations
 
-# Load data and run app
+# Load data
 movies = load_data()
 
+# App UI
 if not movies.empty:
     similarity = compute_similarity(movies)
 
@@ -88,4 +81,4 @@ if not movies.empty:
                 st.markdown(f"**🎥 {title}**")
                 st.caption(overview[:150] + "...")
 else:
-    st.warning("Dataset is empty or missing required columns.")
+    st.warning("⚠️ Dataset is empty or missing required columns.")
