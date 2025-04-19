@@ -52,9 +52,13 @@ def compute_similarity(df):
     tfidf_matrix = tfidf.fit_transform(df['overview'].fillna(''))
     return cosine_similarity(tfidf_matrix)
 
-# Recommender function
+# Recommender function with safe checks
 def recommend(movie, df, similarity_matrix):
-    index = df[df['title'] == movie].index[0]
+    match = df[df['title'] == movie]
+    if match.empty:
+        return []
+    
+    index = match.index[0]
     distances = list(enumerate(similarity_matrix[index]))
     sorted_distances = sorted(distances, key=lambda x: x[1], reverse=True)[1:6]
     recommendations = [(df.iloc[i].title, df.iloc[i].overview, df.iloc[i].poster_url) for i, _ in sorted_distances]
@@ -74,11 +78,15 @@ if not movies.empty:
         st.subheader("You may also like:")
         results = recommend(selected_movie, movies, similarity)
 
-        cols = st.columns(5)
-        for i, (title, overview, poster_url) in enumerate(results):
-            with cols[i]:
-                st.image(poster_url if pd.notna(poster_url) else "https://via.placeholder.com/200x300?text=No+Image", width=150)
-                st.markdown(f"**🎥 {title}**")
-                st.caption(overview[:150] + "...")
+        if results:
+            cols = st.columns(len(results))
+            for i, (title, overview, poster_url) in enumerate(results):
+                with cols[i]:
+                    image_url = poster_url if pd.notna(poster_url) and str(poster_url).startswith("http") else "https://via.placeholder.com/200x300?text=No+Image"
+                    st.image(image_url, width=150)
+                    st.markdown(f"**🎥 {title}**")
+                    st.caption(overview[:150] + "...")
+        else:
+            st.warning("❌ Could not find recommendations for this movie.")
 else:
     st.warning("⚠️ Dataset is empty or missing required columns.")
