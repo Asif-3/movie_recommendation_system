@@ -1,4 +1,8 @@
 streamlit
 requests
 datasets
+scikit-learn
 pandas
+
+
+
