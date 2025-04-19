@@ -1,4 +1,4 @@
-import streamlit as st
+8import streamlit as st
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -61,7 +61,7 @@ if not movies.empty and 'title' in movies.columns:
     try:
         similarity = compute_similarity(movies)
 
-        st.title("🎬 Movie Recommender System")
+        st.title("🎬 Movie recommender system - Created by Asif")
         selected_movie = st.selectbox("🎞️ Select a movie", movies['title'].values)
 
         if st.button("✨ Show Recommendations"):
