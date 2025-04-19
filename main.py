@@ -7,9 +7,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 st.set_page_config(page_title="🎬 Movie Recommender", layout="wide")
 
 # Load dataset from CSV
-@st.cache_data
+@st.cache_resource
 def load_data():
     try:
+        # Make sure the dataset exists and is correctly formatted
         df = pd.read_csv("dataset.csv")
 
         # Rename columns to lowercase for consistency
@@ -25,9 +26,12 @@ def load_data():
     except FileNotFoundError:
         st.error("❌ dataset.csv not found. Please upload it alongside your app file.")
         return pd.DataFrame()
+    except Exception as e:
+        st.error(f"❌ Error loading dataset: {e}")
+        return pd.DataFrame()
 
 # Compute similarity matrix
-@st.cache_data
+@st.cache_resource
 def compute_similarity(df):
     tfidf = TfidfVectorizer(stop_words='english')
     tfidf_matrix = tfidf.fit_transform(df['overview'].fillna(''))
@@ -38,6 +42,7 @@ def recommend(movie, df, similarity_matrix):
     try:
         index = df[df['title'] == movie].index[0]
     except IndexError:
+        st.error("❌ Movie not found in dataset.")
         return []
 
     distances = list(enumerate(similarity_matrix[index]))
