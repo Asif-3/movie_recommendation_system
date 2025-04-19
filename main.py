@@ -6,21 +6,66 @@ from sklearn.metrics.pairwise import cosine_similarity
 # Page config
 st.set_page_config(page_title="🎬 Movie Recommender", layout="wide")
 
+# Custom CSS for styling
+st.markdown("""
+    <style>
+    /* Container cards for recommendations */
+    .recommendation-card {
+        background-color: #f9f9f9;
+        padding: 15px;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        animation: fadeInUp 0.5s ease forwards;
+        margin-top: 10px;
+    }
+
+    .recommendation-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+
+    .recommendation-card img {
+        border-radius: 10px;
+        max-height: 220px;
+        margin-bottom: 10px;
+        transition: transform 0.3s ease;
+    }
+
+    .recommendation-card h4 {
+        margin: 5px 0;
+        font-size: 18px;
+    }
+
+    .recommendation-card p {
+        font-size: 14px;
+        color: #555;
+    }
+
+    @keyframes fadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Load dataset from CSV
 @st.cache_resource
 def load_data():
     try:
-        # Make sure the dataset exists and is correctly formatted
         df = pd.read_csv("dataset.csv")
-
-        # Rename columns to lowercase for consistency
         df.rename(columns={
             'Title': 'title',
             'Overview': 'overview',
             'Poster_Url': 'poster_url'
         }, inplace=True)
-
-        # Drop rows with missing title or overview
         df = df.dropna(subset=['title', 'overview']).reset_index(drop=True)
         return df
     except FileNotFoundError:
@@ -76,12 +121,13 @@ if not movies.empty and 'title' in movies.columns:
                     cols = st.columns(len(results))
                     for i, (title, overview, poster_url) in enumerate(results):
                         with cols[i]:
-                            st.image(
-                                poster_url if pd.notna(poster_url) else "https://via.placeholder.com/200x300?text=No+Image",
-                                width=150
-                            )
-                            st.markdown(f"**🎥 {title}**")
-                            st.caption(overview[:150] + "...")
+                            st.markdown(f"""
+                                <div class="recommendation-card">
+                                    <img src="{poster_url if pd.notna(poster_url) else 'https://via.placeholder.com/200x300?text=No+Image'}" width="150">
+                                    <h4>{title}</h4>
+                                    <p>{overview[:150]}...</p>
+                                </div>
+                            """, unsafe_allow_html=True)
                 else:
                     st.warning("⚠️ No recommendations found.")
             else:
