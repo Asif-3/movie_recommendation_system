@@ -10,8 +10,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 st.set_page_config(page_title="🎬 Movie Recommender", layout="wide")
 
 # Define URLs for dataset files on GitHub
-arrow_url = 'https://github.com/Asif-3/movie_recommendation_system/raw/main/datasets/movies-dataset-train.arrow'
-info_url = 'https://github.com/Asif-3/movie_recommendation_system/raw/main/datasets/dataset_info.json'
+arrow_url = 'https://github.com/Asif-3/movie_recommendation_system/raw/main/movies-dataset-train.arrow'
+info_url = 'https://github.com/Asif-3/movie_recommendation_system/raw/main/dataset_info.json'
 
 # Directory to save the dataset files
 dataset_path = 'datasets'
