@@ -3,24 +3,19 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Page config
+
 st.set_page_config(page_title="🎬 Movie Recommender", layout="wide")
 
-# Load dataset from CSV
+
 @st.cache_resource
 def load_data():
     try:
-        # Make sure the dataset exists and is correctly formatted
         df = pd.read_csv("dataset.csv")
-
-        # Rename columns to lowercase for consistency
         df.rename(columns={
             'Title': 'title',
             'Overview': 'overview',
             'Poster_Url': 'poster_url'
         }, inplace=True)
-
-        # Drop rows with missing title or overview
         df = df.dropna(subset=['title', 'overview']).reset_index(drop=True)
         return df
     except FileNotFoundError:
@@ -30,14 +25,12 @@ def load_data():
         st.error(f"❌ Error loading dataset: {e}")
         return pd.DataFrame()
 
-# Compute similarity matrix
 @st.cache_resource
 def compute_similarity(df):
     tfidf = TfidfVectorizer(stop_words='english')
     tfidf_matrix = tfidf.fit_transform(df['overview'].fillna(''))
     return cosine_similarity(tfidf_matrix)
 
-# Recommend similar movies
 def recommend(movie, df, similarity_matrix):
     try:
         index = df[df['title'] == movie].index[0]
@@ -50,11 +43,10 @@ def recommend(movie, df, similarity_matrix):
     recommendations = [(df.iloc[i].title, df.iloc[i].overview, df.iloc[i].poster_url) for i, _ in sorted_distances]
     return recommendations
 
-# Initialize session state
 if 'show' not in st.session_state:
     st.session_state['show'] = False
 
-# Load data and run the app
+
 movies = load_data()
 
 if not movies.empty and 'title' in movies.columns:
