@@ -7,6 +7,20 @@ from sklearn.metrics.pairwise import cosine_similarity
 st.set_page_config(page_title="🎬 Movie Recommender", layout="wide")
 
 
+def hide_github_icon_and_footer():
+    hide_streamlit_style = """
+        <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        .css-164nlkn.egzxvld1 {display: none;}  /* GitHub icon in top right */
+        </style>
+    """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+# Call the function at the top of your app
+hide_github_icon_and_footer()
+
+
 @st.cache_resource
 def load_data():
     try:
