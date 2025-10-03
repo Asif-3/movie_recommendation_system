@@ -52,7 +52,7 @@ add_bg_from_local("as.png")
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("dataset.csv")
+    df = pd.read_csv("dataset1.csv")
     df.rename(columns={'Title':'title','Overview':'overview','Poster_Url':'poster_url'}, inplace=True)
     df = df.dropna(subset=['title','overview']).reset_index(drop=True)
     return df
