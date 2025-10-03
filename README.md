@@ -7,9 +7,13 @@ This project is a Movie Recommendation System built using Python and Streamlit (
 **Features**
 
 Search Movies: Find movies by title.
+
 Content-Based Recommendations: Suggests similar movies based on features like genre, director, cast, etc.
+
 Genre Filtering: Filter movies by specific genres.
+
 User-Friendly Interface: Simple and interactive UI built with Streamlit.
+
 Scalable Dataset: Supports large movie datasets for recommendations.
 
 
