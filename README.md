@@ -26,11 +26,11 @@ Example: movies_dataset.csv
 
 **Technologies Used**
 
-Python
-Streamlit (or Flask/Tkinter if applicable)
-Pandas
-scikit-learn (for TF-IDF and cosine similarity)
-NumPy
+Python,
+Streamlit (or Flask/Tkinter if applicable),
+Pandas,
+scikit-learn (for TF-IDF and cosine similarity),
+NumPy.
 
 **Installation**
 
