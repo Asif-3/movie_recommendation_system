@@ -4,9 +4,7 @@ import base64
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-
 st.set_page_config(page_title="🎬 Movie Recommender", layout="wide")
-
 
 def add_bg_from_local(image_file):
     with open(image_file, "rb") as f:
@@ -30,6 +28,20 @@ def add_bg_from_local(image_file):
             filter: blur(6px) brightness(0.5);
             z-index: -1;
         }}
+
+        /* Custom Red Button */
+        div.stButton > button:first-child {{
+            background-color: #ff4b4b;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            padding: 0.6em 1.2em;
+            border: none;
+        }}
+        div.stButton > button:first-child:hover {{
+            background-color: #e63939;
+            color: white;
+        }}
         </style>
         """,
         unsafe_allow_html=True
@@ -51,8 +63,12 @@ def compute_similarity(df):
     tfidf_matrix = tfidf.fit_transform(df['overview'].fillna(''))
     return cosine_similarity(tfidf_matrix)
 
+
 def recommend(movie, df, similarity_matrix):
-    index = df[df['title'] == movie].index[0]
+    matches = df[df['title'].str.strip().str.lower() == movie.strip().lower()]
+    if matches.empty:
+        return []
+    index = matches.index[0]
     distances = list(enumerate(similarity_matrix[index]))
     sorted_distances = sorted(distances, key=lambda x: x[1], reverse=True)[1:6]
     return [(df.iloc[i].title, df.iloc[i].overview, df.iloc[i].poster_url) for i,_ in sorted_distances]
@@ -69,11 +85,17 @@ if not movies.empty:
         st.subheader("You may also like:")
         results = recommend(selected_movie, movies, similarity)
 
-        cols = st.columns(5)
-        for i,(title, overview, poster_url) in enumerate(results):
-            with cols[i]:
-                st.image(poster_url if pd.notna(poster_url) else "https://via.placeholder.com/200x300?text=No+Image", width=150)
-                st.markdown(f"**🎥 {title}**")
-                st.caption(overview[:150] + "...")
+        if not results:
+            st.warning("⚠️ No recommendations found for this movie.")
+        else:
+            cols = st.columns(len(results))
+            for i,(title, overview, poster_url) in enumerate(results):
+                with cols[i]:
+                    st.image(
+                        poster_url if pd.notna(poster_url) else "https://via.placeholder.com/200x300?text=No+Image",
+                        width=150
+                    )
+                    st.markdown(f"**🎥 {title}**")
+                    st.caption(overview[:150] + "...")
 else:
     st.warning("Dataset is empty or missing required columns.")
