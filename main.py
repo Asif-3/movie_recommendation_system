@@ -1,3 +1,6 @@
+import os
+os.environ["STREAMLIT_WATCHDOG_ENABLE"] = "false"
+
 import streamlit as st
 import pandas as pd
 import base64
@@ -28,8 +31,6 @@ def add_bg_from_local(image_file):
             filter: blur(6px) brightness(0.5);
             z-index: -1;
         }}
-
-        /* Custom Red Button */
         div.stButton > button:first-child {{
             background-color: #ff4b4b;
             color: white;
@@ -49,7 +50,6 @@ def add_bg_from_local(image_file):
 
 add_bg_from_local("as.png")
 
-
 @st.cache_data
 def load_data():
     df = pd.read_csv("dataset.csv")
@@ -62,7 +62,6 @@ def compute_similarity(df):
     tfidf = TfidfVectorizer(stop_words='english')
     tfidf_matrix = tfidf.fit_transform(df['overview'].fillna(''))
     return cosine_similarity(tfidf_matrix)
-
 
 def recommend(movie, df, similarity_matrix):
     matches = df[df['title'].str.strip().str.lower() == movie.strip().lower()]
