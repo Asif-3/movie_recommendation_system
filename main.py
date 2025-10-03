@@ -4,23 +4,27 @@ os.environ["STREAMLIT_WATCHDOG_ENABLE"] = "false"
 import streamlit as st
 import pandas as pd
 import base64
-import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 st.set_page_config(page_title="🎬 Movie Recommender", layout="wide")
 
-# Background image code remains the same
 def add_bg_from_local(image_file):
     with open(image_file, "rb") as f:
         encoded = base64.b64encode(f.read()).decode()
     st.markdown(
         f"""
         <style>
-        .stApp {{ background: none; }}
+        .stApp {{
+            background: none;
+        }}
         .stApp::before {{
             content: "";
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-image: url("data:image/png;base64,{encoded}");
             background-size: cover;
             background-position: center;
@@ -46,7 +50,6 @@ def add_bg_from_local(image_file):
 
 add_bg_from_local("as.png")
 
-# Load data
 @st.cache_data
 def load_data():
     df = pd.read_csv("dataset.csv")
@@ -54,15 +57,12 @@ def load_data():
     df = df.dropna(subset=['title','overview']).reset_index(drop=True)
     return df
 
-# Load precomputed similarity matrix
 @st.cache_data
-def load_similarity():
-    return np.load("similarity_matrix.npy")
+def compute_similarity(df):
+    tfidf = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = tfidf.fit_transform(df['overview'].fillna(''))
+    return cosine_similarity(tfidf_matrix)
 
-movies = load_data()
-similarity = load_similarity()
-
-# Recommendation function
 def recommend(movie, df, similarity_matrix):
     matches = df[df['title'].str.strip().str.lower() == movie.strip().lower()]
     if matches.empty:
@@ -72,14 +72,18 @@ def recommend(movie, df, similarity_matrix):
     sorted_distances = sorted(distances, key=lambda x: x[1], reverse=True)[1:6]
     return [(df.iloc[i].title, df.iloc[i].overview, df.iloc[i].poster_url) for i,_ in sorted_distances]
 
-# App interface
+movies = load_data()
+
 if not movies.empty:
+    similarity = compute_similarity(movies)
+
     st.title("🎬 Movie Recommender System")
     selected_movie = st.selectbox("🎞️ Select a movie", movies['title'].values)
 
     if st.button("✨ Show Recommendations"):
         st.subheader("You may also like:")
         results = recommend(selected_movie, movies, similarity)
+
         if not results:
             st.warning("⚠️ No recommendations found for this movie.")
         else:
