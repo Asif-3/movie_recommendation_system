@@ -1,7 +1,7 @@
 
 
 
-**Overview:**
+##**Overview:**
 This project is a Movie Recommendation System built using Python and Streamlit (or your framework). The system recommends movies based on content similarity, genres, and other features. Users can search for their favorite movies and receive personalized recommendations.
 
 **Features**
